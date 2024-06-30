@@ -1,0 +1,2 @@
+# From-Posts-to-Patterns-Detecting-Anorexia-on-Reddit
+Anorexia is a serious eating disorder characterized by an intense fear of gaining weight and a distorted body image. Identifying individuals suffering from anorexia early on can lead to timely intervention and support. In this repo, we particularly focus on automatically identifying Anorexia from social media posts using machine learning techinques
