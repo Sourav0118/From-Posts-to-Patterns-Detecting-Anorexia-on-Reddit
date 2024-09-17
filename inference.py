@@ -14,8 +14,14 @@ Device = "cuda" if torch.cuda.is_available() else "cpu"
 def load_longformer_model(tokenizer_path, model_path):
     """Load the Longformer model and tokenizer."""
     try:
-        tokenizer = LongformerTokenizer.from_pretrained(tokenizer_path)
-        model = LongformerModel.from_pretrained(model_path)
+        if tokenizer_path != None:
+            tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096", tokenizer_path)
+        else:
+            tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+        if model_path != None:
+            model = LongformerModel.from_pretrained("allenai/longformer-base-4096", model_path)
+        else: 
+            model = LongformerModel.from_pretrained("allenai/longformer-base-4096")
         model.to(Device)
         return tokenizer, model
     except Exception as e:
@@ -102,7 +108,7 @@ def main(args):
             raise ValueError("Failed to get time series data.")
         
         # Load PatchTST and classifier models
-        model_patchtst = PatchTSTForClassification(config=args.config)
+        model_patchtst = PatchTSTForClassification(config)
         model_classifier = BinaryClassifier()
         
         model_patchtst = load_model_weights(model_patchtst, args.patchtst_path)
@@ -135,11 +141,10 @@ if __name__ == "__main__":
     # Argument parser for configurable parameters
     parser = argparse.ArgumentParser(description="Anorexia Prediction using Longformer and PatchTST")
     
-    parser.add_argument('--tokenizer_path', type=str, required=True, help='Path to Longformer tokenizer')
-    parser.add_argument('--model_path', type=str, required=True, help='Path to Longformer model')
+    parser.add_argument('--tokenizer_path', type=str, default=None, help='Path to Longformer tokenizer')
+    parser.add_argument('--model_path', type=str, default=None, help='Path to Longformer model')
     parser.add_argument('--patchtst_path', type=str, required=True, help='Path to PatchTST model')
     parser.add_argument('--classifier_path', type=str, required=True, help='Path to Binary Classifier model')
-    parser.add_argument('--config', type=str, required=True, help='Path to model configuration')
     
     parser.add_argument('--input_text', type=str, required=True, help='Input text for the model')
     parser.add_argument('--max_len', type=int, default=4094, help='Maximum length of tokens for Longformer')
