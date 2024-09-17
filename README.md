@@ -118,6 +118,8 @@ Below are the arguments that can be passed to `inference.py`:
 
 | Argument             | Type   | Description                                           | Default Value |
 |----------------------|--------|-------------------------------------------------------|---------------|
+| `--tokenizer_path`    | str	 | Path to the Longformer tokenizer.	                | None          |
+| `--model_path`    	| str	 | Path to the Longformer model.	                    | None           |
 | `--patchtst_path`     | str    | Path to the PatchTST model.                           | **Required**  |
 | `--classifier_path`   | str    | Path to the Binary Classifier model.                  | **Required**  |
 | `--input_text`        | str    | Input text for prediction.                            | **Required**  |
