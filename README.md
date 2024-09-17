@@ -33,6 +33,18 @@ Posts are also associated with date and time, and time plays a significant role 
 | Longformer         | MHA                | 0.5           | 0.731         | 0.656        | 0.691        | 6.36%         | 4.53%         |
 | Longformer         | MHA+TST            | 0.8           | **0.871**     | 0.831        | **0.852**    | **5.66%**     | **4.05%**     |
 
+### Performance Comparison of Different LLMs in Early Anorexia Detection (Zero Shot Setup)
+
+| **Model**           | **Precision** | **Recall** | **F1-score** | **ERDE_5** |
+|---------------------|---------------|------------|--------------|------------|
+| LLAMA3 8b           | 0.122         | **0.877**  | 0.214        | 2.378      |
+| Mistral 7b v1       | **0.159**     | 0.840      | **0.267**    | 2.040      |
+| Gemma 7b Instruct   | 0.105         | 0.894      | 0.187        | 1.722      |
+| GPT 3.5             | 0.090         | 0.900      | 0.163        | 2.009      |
+| MentaLLaMa          | 0.125         | 0.875      | 0.218        | 2.2516     |
+| **Proposed Approach**| **0.871**     | 0.831      | **0.852**    | **5.661%** |
+
+
 ### Conclusion
 The Longformer model combined with Patch-TST and Multi-headed Attention (MHA) achieved the best performance, indicating the effectiveness of combining text and temporal features with attention mechanisms for early risk detection of anorexia.
 
