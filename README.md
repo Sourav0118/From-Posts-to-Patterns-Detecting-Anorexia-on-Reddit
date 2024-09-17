@@ -108,10 +108,10 @@ The script will interactively ask for the time series data (hr, min) and return 
 ### Model Weights
 You will need to download the following pre-trained model weights:
 - **Longformer**: [Download Here](https://huggingface.co/allenai/longformer-base-4096), One does not need to download the checkpoints of longformer explicitly, the code itself downloads it from hugging face.
-- **PatchTST**: [Link to model weights] (Provide the URL for downloading PatchTST weights)
-- **Binary Classifier**: [Link to model weights] (Provide the URL for downloading Binary Classifier weights)
+- **PatchTST**: model weights are provided in the checkpoints folder
+- **Binary Classifier**: model weights are provided in the checkpoints folder
 
-Save these models locally and provide their paths as arguments when running the script.
+Provide their paths as arguments when running the script.
 
 ## Arguments
 Below are the arguments that can be passed to `inference.py`:
