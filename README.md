@@ -128,6 +128,5 @@ Below are the arguments that can be passed to `inference.py`:
 
 ## References
 - **Longformer**: [AllenAI Longformer Model](https://huggingface.co/allenai/longformer-base-4096)
-- **PatchTST**: [Model Link] (Provide URL to PatchTST model)
-- **Binary Classifier**: [Model Link] (Provide URL to Binary Classifier model)
+- **PatchTST**: [PatchTST](https://huggingface.co/docs/transformers/en/model_doc/patchtst)
 
