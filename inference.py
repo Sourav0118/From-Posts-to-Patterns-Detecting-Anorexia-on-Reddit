@@ -10,6 +10,7 @@ from transformers import PatchTSTConfig, PatchTSTForClassification
 import torch.nn as nn
 from preprocessing import *
 from model import *
+from utils import *
 
 # Initialize necessary components
 sigmoid = nn.Sigmoid()
@@ -25,32 +26,6 @@ config = PatchTSTConfig(
     # loss='bce',
     head_dropout=0.5,
 )
-
-def load_longformer_model(tokenizer_path, model_path):
-    """Load the Longformer model and tokenizer."""
-    try:
-        if tokenizer_path != None:
-            tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096", tokenizer_path)
-        else:
-            tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
-        if model_path != None:
-            model = LongformerModel.from_pretrained("allenai/longformer-base-4096", model_path)
-        else: 
-            model = LongformerModel.from_pretrained("allenai/longformer-base-4096")
-        model.to(Device)
-        return tokenizer, model
-    except Exception as e:
-        print(f"Error loading Longformer model/tokenizer: {str(e)}")
-        return None, None
-
-def preprocess_text(text, tokenizer, max_len):
-    """Preprocess input text for Longformer model."""
-    try:
-        input_ids, attn_mask = transform_single_text(text, tokenizer, max_len, max_len, 1)
-        return input_ids, attn_mask
-    except Exception as e:
-        print(f"Error in text preprocessing: {str(e)}")
-        return None, None
 
 def get_longformer_embeddings(model, input_ids, attn_mask):
     """Generate embeddings from Longformer model."""
@@ -86,16 +61,6 @@ def get_time_stamps(num_time_stamps):
         print(f"Error in getting time stamps: {str(e)}")
         return None, None
 
-def load_model_weights(model, path):
-    """Load pre-trained model weights."""
-    try:
-        model.load_state_dict(torch.load(path, map_location = torch.device(Device)))
-        model.to(Device)
-        return model
-    except Exception as e:
-        print(f"Error loading model weights from {path}: {str(e)}")
-        return None
-
 def main(args):
     try:
         # Load Longformer model and tokenizer
@@ -106,7 +71,7 @@ def main(args):
         
         # Input text and get Longformer embeddings
         input_text = args.input_text
-        input_ids, attn_mask = preprocess_text(input_text, tokenizer, 4094)
+        input_ids, attn_mask = preprocess_text(input_text, tokenizer, args.max_len)
         
         if input_ids is None or attn_mask is None:
             raise ValueError("Failed to preprocess input text.")
@@ -154,10 +119,12 @@ if __name__ == "__main__":
     
     parser.add_argument('--tokenizer_path', type=str, default=None, help='Path to Longformer tokenizer')
     parser.add_argument('--model_path', type=str, default=None, help='Path to Longformer model')
-    parser.add_argument('--patchtst_path', type=str, require=True, help='Path to PatchTST model')
-    parser.add_argument('--classifier_path', type=str, require=True, help='Path to Binary Classifier model')
+    parser.add_argument('--patchtst_path', type=str, default="/vast/palmer/scratch/liu_xiaofeng/ss4786/sourav/alpha_beta_variation_ckpts/model_best_patchtst_7_6.pt", help='Path to PatchTST model')
+    parser.add_argument('--classifier_path', type=str, default="/vast/palmer/scratch/liu_xiaofeng/ss4786/sourav/alpha_beta_variation_ckpts/model_best_classifier_7_6.pt", help='Path to Binary Classifier model')
     
-    parser.add_argument('--input_text', type=str, default="hello world", help='Input text for the model')    
+    parser.add_argument('--input_text', type=str, default="hello world", help='Input text for the model')
+    parser.add_argument('--max_len', type=int, default=4094, help='Maximum length of tokens for Longformer')
+    
     parser.add_argument('--num_time_stamps', type=int, default=1, help='Number of time stamps for the time series data')
     parser.add_argument('--alpha', type=float, default=0.9, help='Weight for classifier output')
     parser.add_argument('--beta', type=float, default=0.2, help='Weight for PatchTST output')
