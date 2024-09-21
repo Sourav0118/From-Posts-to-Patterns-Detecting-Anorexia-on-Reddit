@@ -16,10 +16,12 @@ This repository compares different NLP approaches to predict eating disorders th
 - [Model Overview](#model-overview)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Running the Streamlit App](#running-the-streamlit-app)
 - [Running Inference](#running-inference)
 - [Model Weights](#model-weights)
 - [Arguments](#arguments)
 - [References](#references)
+  
 
 ## Approaches
 
@@ -94,6 +96,46 @@ To run this project, you'll need the following installed:
 
 3. Make sure to update the paths to these models in the arguments when running the script.
 
+## Running the Streamlit App
+
+Once all dependencies and model weights are set up, you can run the app with the following command:
+
+```bash
+streamlit run app.py
+```
+
+### Input Handling
+
+The app requires two types of inputs:
+
+1. **Text Input**: The app takes text (e.g., a social media post or description) and processes it through **Longformer** to extract embeddings.
+   
+2. **Time Series Input**: You will be prompted to enter a series of time stamps (in hours and minutes). This information will be processed by **PatchTST** to capture temporal patterns.
+
+### Steps for Running Predictions
+
+1. **Input Text**: After launching the app, you will see a text area labeled `"Enter the input text for the model"`. Provide the text describing the patient's condition or any other relevant input.
+
+2. **Input Number of Time Stamps**: You will be prompted to enter the number of time stamps, followed by the actual time points (in hours and minutes). Make sure to provide all time stamps before proceeding.
+
+3. **Run the Prediction**: Once the input data is provided, press the `"Run Prediction"` button. The app will:
+   - Process the text using **Longformer** to generate embeddings.
+   - Process the time stamps using **PatchTST** for temporal feature extraction.
+   - Combine the outputs from both models using weighted factors (`alpha` and `beta`).
+
+4. **Output**: The final prediction (whether the patient has anorexia or not) will be displayed on the screen based on the combined model outputs. 
+
+The input flow ensures that all data is fully captured before predictions are made, avoiding any premature calculations. The app uses dynamic input handling to avoid early predictions and ensures correct results.
+
+### Example
+
+To predict for a sample patient:
+1. Input text: `"Patient is experiencing irregular eating habits and weight loss."`
+2. Enter the number of time stamps, for example `3`.
+3. Enter the time points in hours and minutes for each timestamp.
+
+After clicking on `"Run Prediction"`, the app will display the prediction, e.g., `"The patient has anorexia"` or `"The patient does not have anorexia"`.
+
 ## Running Inference
 The `inference.py` script takes text input and time series data (entered interactively) and predicts whether the patient has anorexia.
 
@@ -130,4 +172,3 @@ Below are the arguments that can be passed to `inference.py`:
 ## References
 - **Longformer**: [AllenAI Longformer Model](https://huggingface.co/allenai/longformer-base-4096)
 - **PatchTST**: [PatchTST](https://huggingface.co/docs/transformers/en/model_doc/patchtst)
-
