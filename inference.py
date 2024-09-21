@@ -1,8 +1,12 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import os
 import torch
 import numpy as np
 import argparse
 from transformers import LongformerTokenizer, LongformerModel
+from transformers import PatchTSTConfig, PatchTSTForClassification
 import torch.nn as nn
 from preprocessing import *
 from model import *
@@ -10,6 +14,17 @@ from model import *
 # Initialize necessary components
 sigmoid = nn.Sigmoid()
 Device = "cuda" if torch.cuda.is_available() else "cpu"
+
+config = PatchTSTConfig(
+    num_input_channels=2,
+    num_targets=1,
+    context_length=2000,
+    patch_length=12,
+    stride=12,
+    use_cls_token=True,
+    # loss='bce',
+    head_dropout=0.5,
+)
 
 def load_longformer_model(tokenizer_path, model_path):
     """Load the Longformer model and tokenizer."""
@@ -66,7 +81,7 @@ def get_time_stamps(num_time_stamps):
         past_observed_mask = np.ones(2000)
         past_observed_mask[len(time):] = 0
         past_observed_mask = torch.tensor(np.stack((past_observed_mask, past_observed_mask), axis=1), dtype=torch.bool)
-        return torch.tensor(padded_time, dtype=torch.float32), past_observed_mask
+        return torch.tensor(padded_time, dtype=torch.float32).unsqueeze(0), past_observed_mask.unsqueeze(0)
     except Exception as e:
         print(f"Error in getting time stamps: {str(e)}")
         return None, None
@@ -74,7 +89,7 @@ def get_time_stamps(num_time_stamps):
 def load_model_weights(model, path):
     """Load pre-trained model weights."""
     try:
-        model.load_state_dict(torch.load(path, weights_only=True))
+        model.load_state_dict(torch.load(path, map_location = torch.device(Device)))
         model.to(Device)
         return model
     except Exception as e:
@@ -91,7 +106,7 @@ def main(args):
         
         # Input text and get Longformer embeddings
         input_text = args.input_text
-        input_ids, attn_mask = preprocess_text(input_text, tokenizer, args.max_len)
+        input_ids, attn_mask = preprocess_text(input_text, tokenizer, 4094)
         
         if input_ids is None or attn_mask is None:
             raise ValueError("Failed to preprocess input text.")
@@ -103,7 +118,6 @@ def main(args):
         
         # Get time series data
         padded_time, past_observed_mask = get_time_stamps(args.num_time_stamps)
-        
         if padded_time is None or past_observed_mask is None:
             raise ValueError("Failed to get time series data.")
         
@@ -118,16 +132,13 @@ def main(args):
             raise ValueError("Failed to load models.")
         
         # Forward pass through models
-        output1 = model_patchtst(padded_time.to(Device), past_observed_mask.to(Device))
+        output1 = model_patchtst(past_values = padded_time.to(Device), past_observed_mask = past_observed_mask.to(Device))
         output1 = sigmoid(output1.prediction_logits)
-        
         output2 = model_classifier(final_logits.to(Device))
-        
         # Combine model outputs and make prediction
         alpha, beta = args.alpha, args.beta
         output_combined = alpha * output2 + beta * output1
         output_combined = torch.clamp(output_combined, max=1).item()
-        
         # Final prediction
         if output_combined > args.threshold:
             print("The patient has anorexia!")
@@ -143,16 +154,14 @@ if __name__ == "__main__":
     
     parser.add_argument('--tokenizer_path', type=str, default=None, help='Path to Longformer tokenizer')
     parser.add_argument('--model_path', type=str, default=None, help='Path to Longformer model')
-    parser.add_argument('--patchtst_path', type=str, required=True, help='Path to PatchTST model')
-    parser.add_argument('--classifier_path', type=str, required=True, help='Path to Binary Classifier model')
+    parser.add_argument('--patchtst_path', type=str, require=True, help='Path to PatchTST model')
+    parser.add_argument('--classifier_path', type=str, require=True, help='Path to Binary Classifier model')
     
-    parser.add_argument('--input_text', type=str, required=True, help='Input text for the model')
-    parser.add_argument('--max_len', type=int, default=4094, help='Maximum length of tokens for Longformer')
-    
-    parser.add_argument('--num_time_stamps', type=int, required=True, help='Number of time stamps for the time series data')
-    parser.add_argument('--alpha', type=float, default=0.7, help='Weight for classifier output')
-    parser.add_argument('--beta', type=float, default=0.6, help='Weight for PatchTST output')
-    parser.add_argument('--threshold', type=float, default=0.566, help='Threshold for the final prediction')
+    parser.add_argument('--input_text', type=str, default="hello world", help='Input text for the model')    
+    parser.add_argument('--num_time_stamps', type=int, default=1, help='Number of time stamps for the time series data')
+    parser.add_argument('--alpha', type=float, default=0.9, help='Weight for classifier output')
+    parser.add_argument('--beta', type=float, default=0.2, help='Weight for PatchTST output')
+    parser.add_argument('--threshold', type=float, default=0.7, help='Threshold for the final prediction')
 
     args = parser.parse_args()
     
