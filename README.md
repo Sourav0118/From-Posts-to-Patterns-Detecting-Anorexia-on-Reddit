@@ -81,6 +81,7 @@ To run this project, you'll need the following installed:
 - tqdm
 - torch
 - torchvision
+- streamlit
 
 ## Installation
 1. Clone the repository:
